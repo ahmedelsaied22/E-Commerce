@@ -1,5 +1,5 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export enum GenderEnum {
   MALE = 'male',
@@ -48,6 +48,9 @@ export class User {
   })
   isConfirmed!: boolean;
 }
+
+export type UserDocument = HydratedDocument<User>;
+
 export const userShcema = SchemaFactory.createForClass(User);
 
 export const UserModel = MongooseModule.forFeature([

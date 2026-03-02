@@ -11,10 +11,11 @@ import {
 import { JWTService } from '../utils/security/token';
 import { Types } from 'mongoose';
 import { UserRepo } from 'src/db/repo/user.repo';
-import { User } from 'src/db/models/user.model';
+import { User, UserDocument } from 'src/db/models/user.model';
+// import { UserDocument } from 'src/db/models/user.model';
 
 export interface AuthReq extends Request {
-  user: Partial<User>;
+  user: UserDocument | Partial<User>;
 }
 
 @Injectable()
