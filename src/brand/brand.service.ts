@@ -2,14 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { deleteImage } from 'src/common/utils/multer/deleteImage';
 import { BrandRepo } from 'src/db/repo/brand.repo';
-import { UserRepo } from 'src/db/repo/user.repo';
 
 @Injectable()
 export class BrandService {
-  constructor(
-    private readonly brandModel: BrandRepo,
-    private readonly userModel: UserRepo,
-  ) {}
+  constructor(private readonly brandModel: BrandRepo) {}
 
   async createBrand(data: {
     name: string;
@@ -42,7 +38,6 @@ export class BrandService {
 
   async updateBrand(data: {
     name: string;
-    // slug: string;
     image: string;
     createdBy?: Types.ObjectId;
   }) {
@@ -63,17 +58,6 @@ export class BrandService {
     ) {
       throw new BadRequestException('you don`t have authorization');
     }
-    // const updatedBrand = await this.brandModel.updateOne({
-    //   filter: {
-    //     name: data.name,
-    //   },
-    //   update: {
-    //     name: data.name,
-    //     slug: data.name,
-    //     image: data.image,
-    //     createdBy: brand.createdBy,
-    //   },
-    // });
     brand.name = data.name || brand.name;
     brand.slug = data.name || brand.name;
     brand.image = data.image || brand.image;
