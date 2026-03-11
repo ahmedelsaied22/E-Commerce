@@ -1,38 +1,27 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { OTPRepo } from 'src/db/repo/otp.repo';
 import { customAlphabet } from 'nanoid';
 import { OTPTypeEnum } from 'src/db/models/otp.model';
-import { compareHash } from '../security/hash';
+import { compareHash, createHash } from '../security/hash';
+import { UserRepo } from 'src/db/repo/user.repo';
 
 export class OTPService {
-  constructor(private readonly otpRepo: OTPRepo) {}
+  constructor(
+    private readonly otpRepo: OTPRepo,
+    private readonly userRepo: UserRepo,
+  ) {}
 
   async createOTP({
     type = OTPTypeEnum.VERIFY_EMAIL,
     userId,
   }: {
-    userId: Types.ObjectId;
     type?: OTPTypeEnum;
+    userId: Types.ObjectId;
   }) {
     const nanoid = customAlphabet('0123456789', 6);
     const otp = nanoid();
-    const isOtpExist = await this.otpRepo.findOne({
-      filter: {
-        userId,
-        type: OTPTypeEnum.VERIFY_EMAIL,
-      },
-    });
-    console.log(isOtpExist);
-    if (
-      isOtpExist &&
-      new Date(isOtpExist.expiredAt?.toString() as string) >=
-        new Date(Date.now())
-    ) {
-      return new BadRequestException(
-        'otp already sent, please try again later.',
-      );
-    }
 
     console.log({
       userId,
@@ -41,20 +30,32 @@ export class OTPService {
       expiredAt: new Date(Date.now() + 60 * 1000),
     });
 
-    // await this.otpModel.create({
-    //   data: {
-    //     userId,
-    //     type,
-    //     otp: await createHash(otp),
-    //     expiredAt: new Date(Date.now() + 60 * 1000),
-    //   },
-    // });
-    console.log('finally otp created from createOtp');
-    if (!isOtpExist) {
+    const allUsers = await this.userRepo.find({});
+    console.log(allUsers);
+
+    const isOtpExist = await this.otpRepo.findOne({
+      filter: {
+        userId,
+        type: OTPTypeEnum.VERIFY_EMAIL,
+      },
+    });
+    if (!isOtpExist || isOtpExist == undefined) {
+      console.log(1);
+      console.log(this.otpRepo);
+      await this.otpRepo.create({
+        data: {
+          userId: userId as Types.ObjectId,
+          type,
+          otp: await createHash(otp),
+          expiredAt: new Date(Date.now() + 60 * 1000),
+        },
+      });
       return otp;
     }
-    // isOtpExist.otp = await createHash(otp);
-    // isOtpExist.expiredAt = new Date(Date.now() + 60 * 1000);
+
+    isOtpExist.otp = await createHash(otp);
+    isOtpExist.expiredAt = new Date(Date.now() + 60 * 1000);
+    await isOtpExist.save();
     return otp;
   }
 
@@ -67,8 +68,6 @@ export class OTPService {
     userId: Types.ObjectId;
     type: OTPTypeEnum;
   }) {
-    console.log({ OTPRepo });
-    console.log(this.otpRepo);
     const otpExist = await this.otpRepo.findOne({
       filter: {
         userId,

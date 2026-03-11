@@ -41,7 +41,24 @@ export class ProductService {
   }
 
   async getAllProducts() {
-    const allProducts = await this.productRepo.find({});
+    const allProducts = await this.productRepo.find({
+      options: {
+        populate: [
+          {
+            path: 'createdBy',
+            select: 'name email',
+          },
+          {
+            path: 'brand',
+            select: 'name image',
+          },
+          {
+            path: 'category',
+            select: 'name image',
+          },
+        ],
+      },
+    });
 
     return {
       data: { allProducts },

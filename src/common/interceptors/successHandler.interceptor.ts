@@ -22,7 +22,7 @@ export class SuccessHandlerInterceptor implements NestInterceptor {
         const { data = {}, msg = 'success', status = 200 } = res;
         return {
           msg,
-          data,
+          data: data,
           status,
         };
       }),

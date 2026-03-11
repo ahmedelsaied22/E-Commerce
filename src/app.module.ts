@@ -14,6 +14,10 @@ import { CategoryService } from './category/category.service';
 import { ProductModule } from './product/product.module';
 import { ProductController } from './product/product.controller';
 import { ProductService } from './product/product.service';
+import { FavoriteModule } from './favorite/favorite.module';
+import { CartModule } from './cart/cart.module';
+import { CouponModule } from './coupon/coupon.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -33,6 +37,10 @@ import { ProductService } from './product/product.service';
         return connection;
       },
     }),
+    FavoriteModule,
+    CartModule,
+    CouponModule,
+    OrderModule,
   ],
   controllers: [
     AppController,

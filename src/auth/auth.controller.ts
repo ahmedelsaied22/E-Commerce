@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
   Get,
   Post,
   Req,
+  Res,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
@@ -52,7 +57,16 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   me(@Req() { user }) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return { data: user };
+  }
+
+  @Post('log-out')
+  @UseGuards(AuthGuard)
+  async logout(@Res() res) {
+    const token = res.token;
+    await res.clearCookie(token);
+    return {
+      msg: 'logged out successfully',
+    };
   }
 }

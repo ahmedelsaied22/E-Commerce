@@ -22,5 +22,6 @@ import { AuthGuard } from 'src/common/guards/auth.guard';
     JwtService,
     AuthGuard,
   ],
+  exports: [OTPService],
 })
 export class AuthModule {}

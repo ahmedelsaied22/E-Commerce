@@ -57,7 +57,7 @@ export class BrandController {
       slug: body.name,
     };
     console.log({ data });
-    return this.brandService.createBrand(data);
+    return await this.brandService.createBrand(data);
   }
 
   @UseGuards(AuthGuard)
@@ -92,6 +92,6 @@ export class BrandController {
       image: file.path,
       createdBy: user?._id,
     };
-    return this.brandService.updateBrand(data);
+    return await this.brandService.updateBrand(data);
   }
 }

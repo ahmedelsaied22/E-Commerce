@@ -1,5 +1,5 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
 export enum GenderEnum {
   MALE = 'male',
@@ -10,6 +10,7 @@ export enum GenderEnum {
   timestamps: true,
 })
 export class User {
+  [x: string]: any;
   @Prop({
     type: mongoose.Schema.Types.String,
     required: true,
@@ -47,6 +48,12 @@ export class User {
     default: false,
   })
   isConfirmed!: boolean;
+
+  @Prop({
+    type: [Types.ObjectId],
+    required: true,
+  })
+  favorites!: [Types.ObjectId];
 }
 
 export type UserDocument = HydratedDocument<User>;

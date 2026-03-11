@@ -56,7 +56,7 @@ export class CategoryController {
       slug: body.name,
     };
     console.log({ data });
-    return this.categoryService.createCategory(data);
+    return await this.categoryService.createCategory(data);
   }
 
   @Get('')

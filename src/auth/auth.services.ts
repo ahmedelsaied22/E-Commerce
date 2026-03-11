@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import {
   BadRequestException,
   Injectable,
@@ -14,15 +16,16 @@ import { OTPTypeEnum } from 'src/db/models/otp.model';
 import { UserRepo } from 'src/db/repo/user.repo';
 import { RequestBody } from './auth.controller';
 import { OTPRepo } from 'src/db/repo/otp.repo';
-import { customAlphabet } from 'nanoid';
 import { JWTService } from 'src/common/utils/security/token';
+import { sendEmail } from 'src/common/utils/email/sendEmail';
+import { customAlphabet } from 'nanoid';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userModel: UserRepo,
     private readonly otpService: OTPService,
     private readonly otpModel: OTPRepo,
+    private readonly userModel: UserRepo,
     private readonly jwtService: JWTService,
   ) {}
   async signup(body: RequestBody) {
@@ -31,7 +34,7 @@ export class AuthService {
     const userExist = await this.userModel.findOne({ filter: { email } });
 
     if (userExist) {
-      return new BadRequestException('email already exists');
+      throw new BadRequestException('email already exists');
     }
     const user = await this.userModel.create({
       data: {
@@ -43,28 +46,20 @@ export class AuthService {
       },
     });
     const nanoid = customAlphabet('0123456789', 6);
-    const MakeOtp = nanoid();
-    const errorOtp = await this.otpModel.create({
+    const createOtp = nanoid();
+    const newOtp = await this.otpModel.create({
       data: {
         userId: user._id,
         type: OTPTypeEnum.VERIFY_EMAIL,
-        otp: await createHash(MakeOtp),
+        otp: await createHash(createOtp),
         expiredAt: new Date(Date.now() + 60 * 1000),
       },
     });
-    console.log(errorOtp);
-    // console.log('before creating otp');
-    // const otp = await this.otpService.createOTP({
-    //   type: OTPTypeEnum.VERIFY_EMAIL,
-    //   userId: user._id,
-    // });
-    // console.log('after creating otp');
 
-    emailEmitter.publish(EMAIL_EVENTS_ENUM.VERIFY_EMAIL, {
-      to: user.email,
-      subject: 'verify your email',
+    sendEmail({
+      to: user.email as string,
       html: template({
-        otp: MakeOtp,
+        otp: createOtp as string,
         name: user.name as string,
         subject: 'verify your email',
       }),
@@ -136,7 +131,7 @@ export class AuthService {
       to: isEmailExist.email,
       subject: 'verify your email',
       html: template({
-        otp: newOTP as string,
+        otp: newOTP,
         name: isEmailExist.name as string,
         subject: 'verify your email',
       }),
@@ -165,7 +160,7 @@ export class AuthService {
     const token = this.jwtService.sign({
       payload,
       options: {
-        expiresIn: '15 M',
+        expiresIn: '7 D',
         secret: process.env.SECRET,
       },
     });
