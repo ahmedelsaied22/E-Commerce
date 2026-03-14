@@ -2,6 +2,8 @@ import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import { User } from './user.model';
 import { Product } from './product.model';
+import { Cart } from './cart.model';
+import { Coupon } from './coupon.model';
 
 export enum PaymentMethodEnum {
   CARD = 'card',
@@ -26,6 +28,20 @@ export class Order {
     ref: User.name,
   })
   userId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    required: true,
+    ref: Cart.name,
+  })
+  cartId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    required: true,
+    ref: Coupon.name,
+  })
+  coupon!: Types.ObjectId;
 
   @Prop({
     type: [
@@ -54,7 +70,7 @@ export class Order {
     required: true,
     default: 0,
   })
-  supTotal!: number;
+  subTotal!: number;
 
   @Prop({
     type: Number,
@@ -94,6 +110,7 @@ export class Order {
 
   @Prop({
     type: String,
+    default: OrderStatusEnum.PENDING,
     enum: Object.values(OrderStatusEnum),
   })
   orderStatus!: OrderStatusEnum;

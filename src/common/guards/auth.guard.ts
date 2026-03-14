@@ -7,13 +7,10 @@ import {
   ExecutionContext,
   Injectable,
 } from '@nestjs/common';
-// import { Observable } from 'rxjs';
 import { JWTService } from '../utils/security/token';
 import { Types } from 'mongoose';
 import { UserRepo } from 'src/db/repo/user.repo';
 import { User, UserDocument } from 'src/db/models/user.model';
-// import { UserDocument } from 'src/db/models/user.model';
-
 export interface AuthReq extends Request {
   user: UserDocument | Partial<User>;
 }
@@ -39,7 +36,7 @@ export class AuthGuard implements CanActivate {
       } = await this.jwtService.verify({
         token,
         options: {
-          secret: process.env.SECRET,
+          secret: process.env.SECRET_ACCESS_TOKEN,
         },
       });
       const user = await this.userModel.findById({

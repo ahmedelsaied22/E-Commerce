@@ -1,21 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
+/* eslint-disable @typescript-eslint/require-await */
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Post,
   Req,
-  Res,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { ZodPipe } from 'src/common/pipes/zod.pipe';
 import { AuthService } from './auth.services';
 import { SignupSchema } from './authValidation/signup.schema';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { AuthGuard, type AuthReq } from 'src/common/guards/auth.guard';
 
 export interface RequestBody {
   success: boolean;
@@ -54,7 +57,7 @@ export class AuthController {
     return this.authService.login({ email, password });
   }
 
-  @Get('me')
+  @Get('profile')
   @UseGuards(AuthGuard)
   me(@Req() { user }) {
     return { data: user };
@@ -62,11 +65,20 @@ export class AuthController {
 
   @Post('log-out')
   @UseGuards(AuthGuard)
-  async logout(@Res() res) {
-    const token = res.token;
-    await res.clearCookie(token);
+  async logout() {
     return {
       msg: 'logged out successfully',
+      data: {},
     };
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Req() req: AuthReq) {
+    const refreshToken = req.body!['refreshToken'];
+    if (!refreshToken.startsWith(process.env.BEARER as string)) {
+      throw new BadRequestException('in-valid token');
+    }
+    const token = refreshToken.split(' ')[1];
+    return await this.authService.refreshToken(token);
   }
 }

@@ -20,8 +20,6 @@ export class CartController {
     },
   ) {
     const userId = req.user._id;
-    return {
-      data: await this.cartService.addToCart({ userId, productData }),
-    };
+    return await this.cartService.addToCart({ userId, productData });
   }
 }

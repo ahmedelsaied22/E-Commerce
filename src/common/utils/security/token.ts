@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
@@ -11,9 +13,7 @@ export class JWTService {
   }
 
   verify({ token, options }: { token: string; options: JwtVerifyOptions }) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result = this.JWT.verify(token, options);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
   }
 }

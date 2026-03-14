@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import {
@@ -19,6 +20,7 @@ import { OTPRepo } from 'src/db/repo/otp.repo';
 import { JWTService } from 'src/common/utils/security/token';
 import { sendEmail } from 'src/common/utils/email/sendEmail';
 import { customAlphabet } from 'nanoid';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -157,15 +159,60 @@ export class AuthService {
       email: user.email,
       _id: user._id,
     };
-    const token = this.jwtService.sign({
+    const accessToken = this.jwtService.sign({
+      payload,
+      options: {
+        expiresIn: '2 H',
+        secret: process.env.SECRET_ACCESS_TOKEN,
+      },
+    });
+    const refreshToken = this.jwtService.sign({
       payload,
       options: {
         expiresIn: '7 D',
-        secret: process.env.SECRET,
+        secret: process.env.SECRET_REFRESH_TOKEN,
       },
     });
     return {
-      data: { accessToken: token },
+      data: {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      },
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
+    console.log(refreshToken);
+    const userInfo: {
+      _id: Types.ObjectId;
+      email: string;
+    } = await this.jwtService.verify({
+      token: refreshToken,
+      options: {
+        secret: process.env.SECRET_REFRESH_TOKEN as string,
+      },
+    });
+    const isUserExist = await this.userModel.findById({
+      id: userInfo._id,
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('user is deleted');
+    }
+    const accessToken = this.jwtService.sign({
+      payload: {
+        _id: userInfo._id,
+        email: userInfo.email,
+      },
+      options: {
+        expiresIn: '2 H',
+        secret: process.env.SECRET_ACCESS_TOKEN as string,
+      },
+    });
+
+    return {
+      data: {
+        accessToken: accessToken,
+      },
     };
   }
 }

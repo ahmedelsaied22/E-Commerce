@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import {
-  BadRequestException,
+  // BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -36,18 +35,18 @@ export class CartService {
       },
     });
 
-    if (!isProductExist) {
+    if (!isProductExist || !isProductExist.stock) {
       throw new NotFoundException(
         'this quantity unavailable from this product',
       );
     }
-
     let userCart = await this.cartRepo.findOne({
       filter: {
         userId,
       },
     });
     if (!userCart) {
+      // console.log('no cart found');
       userCart = await this.cartRepo.create({
         data: {
           userId,
@@ -63,10 +62,7 @@ export class CartService {
         data: userCart,
       };
     } else {
-      if (userCart.items == undefined) {
-        userCart.items = [];
-      }
-      const productIndex = userCart.items.findIndex((item) => {
+      const productIndex = userCart.items!.findIndex((item) => {
         return item.product.equals(product);
       }) as number;
       if (productIndex == -1) {
@@ -74,21 +70,24 @@ export class CartService {
           product: product,
           quantity: quantity,
         });
+        // await userCart.save();
       } else {
         const foundItem = userCart.items![productIndex];
+        // console.log(foundItem);
         let totalQuantity = quantity + foundItem.quantity;
         if (totalQuantity > (isProductExist.stock || 0)) {
           totalQuantity = isProductExist.stock || 0;
-          await userCart.save();
           throw new NotFoundException(
             `only availabe stock is ${isProductExist.stock}`,
           );
         } else {
           foundItem.quantity = totalQuantity;
-          await userCart.save();
+          // await userCart.save();
         }
       }
     }
+    await userCart.save();
+
     return {
       data: userCart,
     };
