@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { Product } from 'src/db/models/product.model';
@@ -40,28 +41,37 @@ export class ProductService {
     };
   }
 
-  async getAllProducts() {
-    const allProducts = await this.productRepo.find({
-      options: {
-        populate: [
-          {
-            path: 'createdBy',
-            select: 'name email',
-          },
-          {
-            path: 'brand',
-            select: 'name image',
-          },
-          {
-            path: 'category',
-            select: 'name image',
-          },
-        ],
-      },
-    });
+  // async getAllProducts(filterProduct: FilteringProductDTO) {
+  //   const { category, minPrice, maxPrice } = filterProduct;
+  //   const filter: any = {};
+  //   if (category) filter.category = category;
+  //   if (minPrice || maxPrice) {
+  //     filter.price = {};
+  //     if (minPrice) filter.price.$gte = minPrice;
+  //     if (maxPrice) filter.price.$lte = maxPrice;
+  //   }
+  //   const allProducts = await this.productModel.find({
+  //     filter,
+  //     options: {
+  //       populate: [
+  //         {
+  //           path: 'createdBy',
+  //           select: 'name email',
+  //         },
+  //         {
+  //           path: 'brand',
+  //           select: 'name image',
+  //         },
+  //         {
+  //           path: 'category',
+  //           select: 'name image',
+  //         },
+  //       ],
+  //     },
+  //   });
 
-    return {
-      data: { allProducts },
-    };
-  }
+  //   return {
+  //     data: { allProducts },
+  //   };
+  // }
 }

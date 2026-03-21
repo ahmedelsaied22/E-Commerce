@@ -13,6 +13,7 @@ import { UserRepo } from 'src/db/repo/user.repo';
 import { User, UserDocument } from 'src/db/models/user.model';
 export interface AuthReq extends Request {
   user: UserDocument | Partial<User>;
+  token: any;
 }
 
 @Injectable()
@@ -48,6 +49,7 @@ export class AuthGuard implements CanActivate {
       if (!user.isConfirmed) {
         throw new BadRequestException('email not confirmed');
       }
+      req.token = token;
       req.user = user;
       return true;
     } catch (err) {

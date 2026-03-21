@@ -2,8 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
-/* eslint-disable @typescript-eslint/require-await */
-
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
@@ -28,6 +26,7 @@ export interface RequestBody {
     password: string;
     age: number;
     gender: string;
+    role: string;
   };
 }
 
@@ -37,9 +36,8 @@ export class AuthController {
 
   @Post('signup')
   @UsePipes(new ZodPipe(SignupSchema))
-  // @UsePipes(new ZodPipe(OTPShema))
-  signup(@Body() body: RequestBody) {
-    return this.authService.signup(body);
+  async signup(@Body() body: RequestBody) {
+    return await this.authService.signup(body);
   }
 
   @Post('confirm-email')
@@ -63,15 +61,6 @@ export class AuthController {
     return { data: user };
   }
 
-  @Post('log-out')
-  @UseGuards(AuthGuard)
-  async logout() {
-    return {
-      msg: 'logged out successfully',
-      data: {},
-    };
-  }
-
   @Post('refresh-token')
   async refreshToken(@Req() req: AuthReq) {
     const refreshToken = req.body!['refreshToken'];
@@ -80,5 +69,16 @@ export class AuthController {
     }
     const token = refreshToken.split(' ')[1];
     return await this.authService.refreshToken(token);
+  }
+
+  @Post('log-out')
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: AuthReq) {
+    const user = req.user;
+    user.refreshToken = '';
+    await user.save();
+    return {
+      data: 'user logged out successfully',
+    };
   }
 }

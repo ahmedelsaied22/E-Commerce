@@ -92,4 +92,47 @@ export class CartService {
       data: userCart,
     };
   }
+
+  async deleteFromCart({
+    userId,
+    product,
+  }: {
+    userId: Types.ObjectId;
+    product: Types.ObjectId;
+  }) {
+    const isProductExist = await this.productRepo.findById({
+      id: product,
+    });
+    if (!isProductExist) {
+      throw new NotFoundException('product not found');
+    }
+    const userCart = await this.cartRepo.findOne({
+      filter: {
+        userId,
+      },
+    });
+    if (!userCart || !userCart.items) {
+      throw new NotFoundException('your cart is empty');
+    }
+
+    const productIndex: number = userCart.items!.findIndex((item) => {
+      return item.product == product;
+    });
+
+    if (productIndex == -1) {
+      throw new NotFoundException('product not found in your cart');
+    }
+
+    userCart.items![productIndex].quantity -= 1;
+    if (userCart.items[productIndex].quantity == 0) {
+      userCart.items.splice(productIndex, 1);
+      await userCart.save();
+      throw new NotFoundException('this product quantity in your cart is 0');
+    }
+    await userCart.save();
+
+    return {
+      data: userCart,
+    };
+  }
 }

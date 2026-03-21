@@ -6,6 +6,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseGuards,
@@ -16,10 +17,11 @@ import { AuthGuard, type AuthReq } from 'src/common/guards/auth.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { storage } from 'src/common/utils/multer/upload';
 import { Product } from 'src/db/models/product.model';
-import { Types } from 'mongoose';
+import { Query as Q, Types } from 'mongoose';
 import { UserRepo } from 'src/db/repo/user.repo';
 import { ProductRepo } from 'src/db/repo/product.repo';
 import * as fs from 'fs';
+import { FilteringProductDTO } from './productDto/product.dto';
 
 @Controller('product')
 export class ProductController {
@@ -68,8 +70,13 @@ export class ProductController {
     };
   }
 
-  @Get('')
-  async getAllProducts() {
-    return await this.productService.getAllProducts();
-  }
+  // @Get('')
+  // async getAllProducts(@Query() query: FilteringProductDTO) {
+  //   const { category, minPrice, maxPrice } = query;
+  //   return await this.productService.getAllProducts({
+  //     category,
+  //     minPrice,
+  //     maxPrice,
+  //   });
+  // }
 }

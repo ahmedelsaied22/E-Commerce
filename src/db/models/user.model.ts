@@ -6,6 +6,11 @@ export enum GenderEnum {
   FEMALE = 'female',
 }
 
+export enum RoleEnum {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
 @Schema({
   timestamps: true,
 })
@@ -54,6 +59,17 @@ export class User {
     required: true,
   })
   favorites!: [Types.ObjectId];
+
+  @Prop({
+    type: String,
+  })
+  role!: string;
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  refreshToken!: string;
 }
 
 export type UserDocument = HydratedDocument<User>;

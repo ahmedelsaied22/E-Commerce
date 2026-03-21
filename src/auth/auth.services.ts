@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import {
   BadRequestException,
@@ -32,7 +31,7 @@ export class AuthService {
   ) {}
   async signup(body: RequestBody) {
     const { data } = body;
-    const { name, email, password, age, gender } = data;
+    const { name, email, password, age, gender, role } = data;
     const userExist = await this.userModel.findOne({ filter: { email } });
 
     if (userExist) {
@@ -45,11 +44,13 @@ export class AuthService {
         password: await createHash(password?.toString()),
         age,
         gender,
+        role,
+        refreshToken: '',
       },
     });
     const nanoid = customAlphabet('0123456789', 6);
     const createOtp = nanoid();
-    const newOtp = await this.otpModel.create({
+    await this.otpModel.create({
       data: {
         userId: user._id,
         type: OTPTypeEnum.VERIFY_EMAIL,
@@ -67,7 +68,7 @@ export class AuthService {
       }),
     });
     return {
-      data: {},
+      data: user,
     };
   }
 
@@ -173,6 +174,8 @@ export class AuthService {
         secret: process.env.SECRET_REFRESH_TOKEN,
       },
     });
+    user.refreshToken = await createHash(refreshToken);
+    await user.save();
     return {
       data: {
         accessToken: accessToken,
@@ -182,7 +185,6 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    console.log(refreshToken);
     const userInfo: {
       _id: Types.ObjectId;
       email: string;
@@ -198,13 +200,18 @@ export class AuthService {
     if (!isUserExist) {
       throw new NotFoundException('user is deleted');
     }
+    const isRefreshToken = await compareHash(
+      refreshToken,
+      isUserExist!.refreshToken as string,
+    );
+    if (!isRefreshToken) throw new BadRequestException('in-valid refreshToken');
     const accessToken = this.jwtService.sign({
       payload: {
         _id: userInfo._id,
         email: userInfo.email,
       },
       options: {
-        expiresIn: '2 H',
+        expiresIn: '1 H',
         secret: process.env.SECRET_ACCESS_TOKEN as string,
       },
     });

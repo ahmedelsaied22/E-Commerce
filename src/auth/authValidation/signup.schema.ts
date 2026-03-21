@@ -8,6 +8,7 @@ export const SignupSchema = z
     name: z.string(),
     age: z.number().positive(),
     gender: z.string(),
+    role: z.string(),
   })
   .superRefine((args, ctx) => {
     if (args.password != args.confirmPassword) {
