@@ -13,13 +13,6 @@ import { UserRepo } from 'src/db/repo/user.repo';
 @Module({
   imports: [CartModel, ProductModel, UserModel],
   controllers: [CartController],
-  providers: [
-    CartService,
-    CartRepo,
-    ProductRepo,
-    JWT,
-    JWTService,
-    UserRepo,
-  ],
+  providers: [CartService, CartRepo, ProductRepo, JWT, JWTService, UserRepo],
 })
 export class CartModule {}

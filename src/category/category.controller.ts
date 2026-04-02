@@ -7,14 +7,16 @@ import {
   Req,
   UploadedFile,
   UseGuards,
-  UseInterceptors,
+  // UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { storage } from 'src/common/utils/multer/upload';
+// import { FileInterceptor } from '@nestjs/platform-express';
+// import { storage } from 'src/common/utils/multer/upload';
 import { Types } from 'mongoose';
 import { AuthGuard, type AuthReq } from 'src/common/guards/auth.guard';
 import { UserRepo } from 'src/db/repo/user.repo';
 import { CategoryService } from './category.service';
+// import { memoryStorage } from 'multer';
+// import { uploadSingleFile } from 'src/upload/cloud.services';
 
 @Controller('category')
 export class CategoryController {
@@ -24,17 +26,20 @@ export class CategoryController {
   ) {}
 
   @UseGuards(AuthGuard)
-  @UseInterceptors(
-    FileInterceptor('category', {
-      storage: storage('src/uploads/category'),
-    }),
-  )
+  // @UseInterceptors(
+  //   FileInterceptor('category', {
+  //     storage: memoryStorage(),
+  //   }),
+  // )
   @Post('')
   async createCategory(
     @Body()
     body: {
       name: string;
-      image: string;
+      image: {
+        secure_url: string;
+        public_id: string;
+      };
       createdBy: Types.ObjectId;
       slug: string;
     },
@@ -49,13 +54,13 @@ export class CategoryController {
         email: req.user.email,
       },
     });
+    // const image = await uploadSingleFile({ file });
     const data = {
       name: body.name,
-      image: file.path,
+      // image: image,
       createdBy: user?._id,
       slug: body.name,
     };
-    console.log({ data });
     return await this.categoryService.createCategory(data);
   }
 

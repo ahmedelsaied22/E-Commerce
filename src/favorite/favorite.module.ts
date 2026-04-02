@@ -11,12 +11,6 @@ import { JWTService } from 'src/common/utils/security/token';
 @Module({
   imports: [UserModel, ProductModel],
   controllers: [FavoriteController],
-  providers: [
-    FavoriteService,
-    UserRepo,
-    ProductRepo,
-    JWTService,
-    JWT,
-  ],
+  providers: [FavoriteService, UserRepo, ProductRepo, JWTService, JWT],
 })
 export class FavoriteModule {}

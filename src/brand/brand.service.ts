@@ -9,7 +9,7 @@ export class BrandService {
 
   async createBrand(data: {
     name: string;
-    image: string;
+    // image: string;
     createdBy?: Types.ObjectId;
     slug: string;
   }) {
@@ -24,7 +24,7 @@ export class BrandService {
     const newBrand = await this.brandModel.create({
       data: {
         name: data.name,
-        image: data.image,
+        // image: data.image,
         createdBy: data.createdBy,
         slug: data.name,
       },
@@ -38,7 +38,7 @@ export class BrandService {
 
   async updateBrand(data: {
     name: string;
-    image: string;
+    // image: string;
     createdBy?: Types.ObjectId;
   }) {
     const brand = await this.brandModel.findOne({
@@ -60,7 +60,7 @@ export class BrandService {
     }
     brand.name = data.name || brand.name;
     brand.slug = data.name || brand.name;
-    brand.image = data.image || brand.image;
+    // brand.image = data.image || brand.image;
 
     await brand.save();
 

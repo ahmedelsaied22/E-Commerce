@@ -24,10 +24,18 @@ export class Product {
   slug?: string;
 
   @Prop({
-    type: [String],
+    type: [
+      {
+        secure_url: String,
+        public_id: String,
+      },
+    ],
     required: true,
   })
-  images!: string[];
+  images!: {
+    secure_url: string;
+    public_id: string;
+  }[];
 
   @Prop({
     type: Types.ObjectId,

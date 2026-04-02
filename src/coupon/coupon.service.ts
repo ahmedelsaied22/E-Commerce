@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { Coupon } from 'src/db/models/coupon.model';
 import { CouponRepo } from 'src/db/repo/coupon.repo';
 
@@ -31,6 +32,27 @@ export class CouponService {
     console.log(newCoupon);
     return {
       data: newCoupon,
+    };
+  }
+
+  async updateCoupon({
+    maxCount,
+    couponId,
+  }: {
+    maxCount: number;
+    couponId: Types.ObjectId;
+  }) {
+    const couponExist = await this.couponRepo.findById({
+      id: couponId,
+    });
+    if (!couponExist) {
+      throw new NotFoundException('coupon not found');
+    }
+    couponExist.maxCount = maxCount || couponExist.maxCount;
+    await couponExist.save();
+    return {
+      msg: 'coupon updated successfully',
+      data: {},
     };
   }
 

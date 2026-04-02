@@ -8,7 +8,10 @@ export class CategoryService {
 
   async createCategory(data: {
     name: string;
-    image: string;
+    // image: {
+    //   secure_url: string;
+    //   public_id: string;
+    // };
     createdBy?: Types.ObjectId;
     slug: string;
   }) {
@@ -23,7 +26,7 @@ export class CategoryService {
     const newCategory = await this.categoryRepo.create({
       data: {
         name: data.name,
-        image: data.image,
+        // image: data.image,
         createdBy: data.createdBy,
         slug: data.slug,
       },

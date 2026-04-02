@@ -23,10 +23,10 @@ export class Category {
   })
   slug!: string;
 
-  @Prop({
-    type: String,
-  })
-  image!: string;
+  // @Prop({
+  //   type: String,
+  // })
+  // image!: string;
 
   @Prop({
     type: Types.ObjectId,
