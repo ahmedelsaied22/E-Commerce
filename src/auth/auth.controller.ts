@@ -46,8 +46,9 @@ export class AuthController {
   }
 
   @Post('resend-otp')
-  resendOTP(@Body() email: string) {
-    return this.authService.resendOTP(email);
+  async resendOTP(@Body() data) {
+    const { email } = data;
+    return await this.authService.resendOTP(email);
   }
 
   @Get('login')

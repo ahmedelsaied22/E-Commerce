@@ -19,8 +19,8 @@ export class BrandController {
     @Body()
     body: {
       name: string;
-      createdBy: Types.ObjectId;
-      slug: string;
+      // createdBy: Types.ObjectId;
+      // slug: string;
     },
     @Req() req: AuthReq,
   ) {

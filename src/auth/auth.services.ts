@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import {
@@ -25,7 +26,7 @@ import { Types } from 'mongoose';
 export class AuthService {
   constructor(
     private readonly otpService: OTPService,
-    private readonly otpModel: OTPRepo,
+    private readonly otpRepo: OTPRepo,
     private readonly userModel: UserRepo,
     private readonly jwtService: JWTService,
   ) {}
@@ -50,7 +51,7 @@ export class AuthService {
     });
     const nanoid = customAlphabet('0123456789', 6);
     const createOtp = nanoid();
-    await this.otpModel.create({
+    await this.otpRepo.create({
       data: {
         userId: user._id,
         type: OTPTypeEnum.VERIFY_EMAIL,
@@ -73,8 +74,6 @@ export class AuthService {
   }
 
   async confirmEmail({ email, otp }: { otp: string; email: string }) {
-    // console.log({ OTPRepo });
-    // console.log(this.otpModel);
     const isEmailExist = await this.userModel.findOne({
       filter: {
         email,
@@ -87,10 +86,13 @@ export class AuthService {
       throw new BadRequestException('your eamil already confirmed');
     }
     // validateOtp
-    const otpExist = await this.otpModel.findOne({
+    const otpExist = await this.otpRepo.findOne({
       filter: {
         userId: isEmailExist._id,
         type: OTPTypeEnum.VERIFY_EMAIL,
+        expiredAt: {
+          $gte: Date.now(),
+        },
       },
     });
     if (!otpExist) {
@@ -104,12 +106,6 @@ export class AuthService {
     if (!(await compareHash(otp, otpExist.otp as string))) {
       throw new BadRequestException('try otp again');
     }
-
-    // await this.otpService.validateOtp({
-    //   otp,
-    //   userId: isEmailExist._id,
-    //   type: OTPTypeEnum.VERIFY_EMAIL,
-    // });
     isEmailExist.isConfirmed = true;
     await isEmailExist.save();
     return {
@@ -126,21 +122,42 @@ export class AuthService {
     if (!isEmailExist) {
       throw new NotFoundException('Email not found');
     }
-    const newOTP = await this.otpService.createOTP({
-      type: OTPTypeEnum.VERIFY_EMAIL,
-      userId: isEmailExist._id,
+    // const newOTP = await this.otpService.createOTP({
+    //   type: OTPTypeEnum.VERIFY_EMAIL,
+    //   userId: isEmailExist._id,
+    // });
+
+    const isOtpExist: any = await this.otpRepo.findOne({
+      filter: {
+        type: OTPTypeEnum.VERIFY_EMAIL,
+      },
+    });
+    const nanoid = customAlphabet('0123456789', 6);
+    const createOtp = nanoid();
+    if (isOtpExist && isOtpExist?.expiredAt >= Date.now()) {
+      throw new BadRequestException('otp already sent');
+    }
+    const newOTP = await this.otpRepo.create({
+      data: {
+        userId: isEmailExist._id,
+        type: OTPTypeEnum.VERIFY_EMAIL,
+        otp: await createHash(createOtp),
+        expiredAt: new Date(Date.now() + 60 * 1000),
+      },
     });
     emailEmitter.publish(EMAIL_EVENTS_ENUM.VERIFY_EMAIL, {
       to: isEmailExist.email,
       subject: 'verify your email',
       html: template({
-        otp: newOTP,
+        otp: createOtp as string,
         name: isEmailExist.name as string,
         subject: 'verify your email',
       }),
     });
+
     return {
-      data: {},
+      msg: 'success sending OTP',
+      data: { newOTP },
     };
   }
 

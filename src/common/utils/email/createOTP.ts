@@ -23,16 +23,6 @@ export class OTPService {
     const nanoid = customAlphabet('0123456789', 6);
     const otp = nanoid();
 
-    console.log({
-      userId,
-      type,
-      otp,
-      expiredAt: new Date(Date.now() + 60 * 1000),
-    });
-
-    const allUsers = await this.userRepo.find({});
-    console.log(allUsers);
-
     const isOtpExist = await this.otpRepo.findOne({
       filter: {
         userId,

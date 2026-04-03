@@ -36,6 +36,12 @@ export class OTP {
     required: true,
   })
   expiredAt!: Date;
+
+  // @Prop({
+  //   default: Date.now,
+  //   expires: 60,
+  // })
+  // createdAt?: Date;
 }
 
 export type OTPDocument = HydratedDocument<OTP>;
@@ -51,6 +57,7 @@ OTPShcema.index(
     expires: 1 * 1000 * 60,
   },
 );
+OTPShcema.index({ createdAt: 1 }, { expireAfterSeconds: 60 });
 
 export const OTPModel = MongooseModule.forFeature([
   {

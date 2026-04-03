@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import {
   BadRequestException,
   Body,
@@ -9,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseGuards,
@@ -17,15 +16,9 @@ import {
 import { ProductService } from './product.service';
 import { AuthGuard, type AuthReq } from 'src/common/guards/auth.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
-// import { storage } from 'src/common/utils/multer/upload';
 import { Product } from 'src/db/models/product.model';
-// import { Query as Q, Types } from 'mongoose';
 import { UserRepo } from 'src/db/repo/user.repo';
 import { ProductRepo } from 'src/db/repo/product.repo';
-import * as fs from 'fs';
-// import { FilteringProductDTO } from './productDto/product.dto';
-// import { uploadFileToCloudinary } from 'src/common/utils/multer/multer.cloud';
-// import { UploadService } from 'src/upload/upload.service';
 import { RoleEnum } from 'src/db/models/user.model';
 import { memoryStorage } from 'multer';
 import { deleteImage, uploadMultipleFiles } from 'src/upload/cloud.services';
@@ -67,9 +60,11 @@ export class ProductController {
     });
 
     data.createdBy = user?._id;
-    // data.images = files.map((file) => file.path);
-    data.images = await uploadMultipleFiles({ files });
-
+    if (data.images) {
+      data.images = await uploadMultipleFiles({ files });
+    } else {
+      data.images = [];
+    }
     return {
       data: this.productService.createProduct(data),
     };
@@ -101,13 +96,32 @@ export class ProductController {
     };
   }
 
-  // @Get('')
-  // async getAllProducts(@Query() query: FilteringProductDTO) {
-  //   const { category, minPrice, maxPrice } = query;
-  //   return await this.productService.getAllProducts({
-  //     category,
-  //     minPrice,
-  //     maxPrice,
-  //   });
-  // }
+  @Get('')
+  async getAllProducts(
+    @Query()
+    query: {
+      category: string;
+      brand: string;
+      minPrice: number;
+      maxPrice: number;
+    },
+  ) {
+    const {
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+    }: {
+      category: string;
+      brand: string;
+      minPrice: number;
+      maxPrice: number;
+    } = query;
+    return await this.productService.getAllProducts({
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+    });
+  }
 }

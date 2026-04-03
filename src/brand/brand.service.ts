@@ -9,7 +9,6 @@ export class BrandService {
 
   async createBrand(data: {
     name: string;
-    // image: string;
     createdBy?: Types.ObjectId;
     slug: string;
   }) {
@@ -24,7 +23,6 @@ export class BrandService {
     const newBrand = await this.brandModel.create({
       data: {
         name: data.name,
-        // image: data.image,
         createdBy: data.createdBy,
         slug: data.name,
       },
